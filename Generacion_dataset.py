@@ -13,6 +13,7 @@ links = crawl_url(url)
 
 print("Número de enlaces:", len(links))
 
+# Variables donde guardamos los datos en bruto obtenidos de las páginas web
 datos_humanos_originales = []
 datos_IA_originales = []
 
@@ -39,11 +40,11 @@ for link in links:
     # esto es necesario porque ChatGPT puede formatear sus respuestas utilizando código en html
     for texto in textos_IA:
         parrafos = texto.find_all(["p", "h1", "h2", "h3", "b", "a"])
-        # Reemplazamos los saltos de línea y las tabulaciones por espacios en blanco
+        # Concatenamos los string obtenidos y reemplazamos los saltos de línea y las tabulaciones por espacios en blanco
+        instancia = ""
         for parrafo in parrafos:
-            instancia = parrafo.get_text().replace('\n', ' ').replace('\t', ' ')
-            datos_IA_originales.append(instancia)
-
+            instancia += parrafo.get_text().replace('\n', ' ').replace('\t', ' ') + " "
+        datos_IA_originales.append(instancia)  
 
 # Comienzamos con el punto 3 de la actividad Limpieza y almacenamiento del dataset
 
@@ -94,7 +95,7 @@ for dato in datos_humanos_grandes:
 #for dato in datos_IA:
 for dato in datos_IA_grandes:
      datos["text"].append(dato)
-     datos["label"].append("ChatGPT")
+     datos["label"].append("generado")
 
 
 print("Instancias totales del dataset: ", len(datos_humanos) + len(datos_IA))

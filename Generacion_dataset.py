@@ -88,12 +88,12 @@ for texto in datos_IA_grandes:
 # almacenamos en esta variable todos los datos indicando en la etiqueta quien lo escribió
 datos = {"text":[], "label":[]} 
 #for dato in datos_humanos:
-for dato in datos_humanos_grandes:
+for dato in datos_humanos:
      datos["text"].append(dato)
      datos["label"].append("humano")
 
 #for dato in datos_IA:
-for dato in datos_IA_grandes:
+for dato in datos_IA:
      datos["text"].append(dato)
      datos["label"].append("generado")
 

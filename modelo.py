@@ -30,7 +30,7 @@ longitud_media_generado = total_caracteres_generados / numero_instancias_generad
 # imprimos las estadísticas del dataset
 print("Número de instancias en el dataset:", len(datos))
 print("Número de instancias humanas:", numero_instancias_humanas)
-print("Número de instancias generadass:", total_caracteres_generados)
+print("Número de instancias generadass:", numero_instancias_generado)
 print("Longitud media de textos humanos:", longitud_media_humano)
 print("Longitud media de textos generados:", longitud_media_generado)
 

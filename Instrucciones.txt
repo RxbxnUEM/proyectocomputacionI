@@ -1,0 +1,5 @@
+Pasos para ejecutar el código:
+1º Ejecutar la script Generacion_datset.py
+2º Ejecutar la script modelo.py
+
+*Nota: El paso 1 se puede omitir si ya tenemos el archivo dataset.tsv

@@ -30,9 +30,9 @@ longitud_media_generado = total_caracteres_generados / numero_instancias_generad
 # imprimos las estadísticas del dataset
 print("Número de instancias en el dataset:", len(datos))
 print("Número de instancias humanas:", numero_instancias_humanas)
-print("Número de instancias generadass:", numero_instancias_generado)
-print("Longitud media de textos humanos:", longitud_media_humano)
-print("Longitud media de textos generados:", longitud_media_generado)
+print("Número de instancias generadas:", numero_instancias_generado)
+print("Longitud media en carácteres de las instancias humanas:", longitud_media_humano)
+print("Longitud media en carácteres de las instancias generadas:", longitud_media_generado)
 
 # Balanceamos los datos para que haya el mismo número de textos humanos que generados
 # Para ello primero vemos cual es el número minimo de instancias entre las dos clases
@@ -45,51 +45,46 @@ else:
 # realizamos el subsampleo agrupando por label
 datos_balanceados = datos.groupby("label").sample(n=numero_minimo_instancias, random_state=777)
 
-numero_instancias_humanas = (datos_balanceados["label"]=="humano").sum()
-total_caracteres_generados = (datos_balanceados["label"]=="generado").sum()
-print("numero instancias humanas después de balanceo: ", numero_instancias_humanas)
-print("numero instancias ChatGPT después de balanceo: ", total_caracteres_generados)
-
 # Asignamos un 80% de los datos a train y un 20% a test
 train_df, test_df = train_test_split(datos_balanceados, test_size=0.2, random_state=42)
-print("isntancias en train:", len(train_df["label"]))
-print("instancias en test:", len(test_df["label"]))  
-print("Instancias en train de humanos", (train_df["label"]=="humano").sum())
-print("Instancias en train de generado", (train_df["label"]=="generado").sum())
-print("Instancias en test de humanos", (test_df["label"]=="humano").sum())
-print("Instancias en test de generado", (test_df["label"]=="generado").sum())
 
+# Imprimimos estadísticas de train y de test
+print("Número instancias en el training:", len(train_df["label"]))
+print("Número instancias en el test:", len(test_df["label"]))  
+print("Número instancias humanas en el training", (train_df["label"]=="humano").sum())
+print("Número instancias generadas en el training", (train_df["label"]=="generado").sum())
+print("Número instancias humanas en el test", (test_df["label"]=="humano").sum())
+print("Número instancias generadas en el test", (test_df["label"]=="generado").sum())
 
-
-# data paths and config
+# Datos de configuración para el entrenamiento modelo
 max_instances_per_class = 5000
-max_features = 20000 # maximum number of features extracted for our instances
+max_features = 20000 # Número máximo de características extraídas para nuestras instancias
 id2label = {0: "human", 1: "machine"}
 
-# vectorize data: extract features from our data (from text to numeric vectors)
+# Vectorizar datos: extraer características de nuestros datos (desde texto hasta vectores numéricos)
 vectorizer = TfidfVectorizer(max_features=max_features, stop_words="english", ngram_range=(1,1))
 X_train = vectorizer.fit_transform(train_df["text"])
 X_test = vectorizer.transform(test_df["text"])
 
-# vectorize labels : from text to numeric vectors
+# Vectorizar etiquetas: de texto a vectores numéricos
 le = LabelEncoder()
 Y_train = le.fit_transform(train_df["label"])
 Y_test = le.transform(test_df["label"])
 
-# create model
+# Crear modelo 
 model = LogisticRegression()
 
-# train model
+# train modelo
 model.fit(X_train, Y_train)
 
-# get test predictions
+# obtener predicciones de test
 predictions = model.predict(X_test)
 
-# evaluate predictions
+# Evaluar predicciones
 target_names = [label for idx, label in id2label.items()]
 print(classification_report(Y_test, predictions, target_names=target_names))
 
-# classify your own text
+# Clasifica el texto introducido en custom_text
 custom_texts = ["I'm ChatGPT, your virtual assistant, and I'm generating texts"]
 X_custom = vectorizer.transform(custom_texts)
 preds = model.predict(X_custom)

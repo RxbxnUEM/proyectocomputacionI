@@ -1,19 +1,20 @@
+# Script en el que se ejecuta el crwaling, scraping, limpieza de los datos y generación del dataset
+
 from Crawling import crawl_url
 from bs4 import BeautifulSoup
 import requests
 from langdetect import detect, LangDetectException
-import pandas
+import pandas as pd
 
 # url que vamos a pasar al crwaler
 url = "https://google.serper.dev/search"
 
-# llamada al crwaler para obtener la lista de links (punto 1 de la actividad)
+# LLamada al crwaler para obtener la lista de links (punto 1 de la actividad)
 links = []
 links = crawl_url(url) 
-
 print("Número de enlaces:", len(links))
 
-# Variables donde guardamos los datos en bruto obtenidos de las páginas web
+# Variables auxiliares donde guardamos los datos originales obtenidos de las páginas web
 datos_humanos_originales = []
 datos_IA_originales = []
 
@@ -24,7 +25,7 @@ for link in links:
     # Recuperamos el HTML de la web
     contenido = resultado.text
         
-    # Parseamos el HTML como beautifulsoup
+    # Parseamos el HTML con beautifulsoup
     soup = BeautifulSoup(contenido, 'html.parser')
 
     # Buscamos los textos escritos por humanos
@@ -40,13 +41,30 @@ for link in links:
     # esto es necesario porque ChatGPT puede formatear sus respuestas utilizando código en html
     for texto in textos_IA:
         parrafos = texto.find_all(["p", "h1", "h2", "h3", "b", "a"])
-        # Concatenamos los string obtenidos y reemplazamos los saltos de línea y las tabulaciones por espacios en blanco
+        # Concatenamos los string obtenidos para conseguir la respuesta completa de ChatGPT
+        # y reemplazamos los saltos de línea y las tabulaciones por espacios en blanco
         instancia = ""
         for parrafo in parrafos:
             instancia += parrafo.get_text().replace('\n', ' ').replace('\t', ' ') + " "
         datos_IA_originales.append(instancia)  
 
-# Comienzamos con el punto 3 de la actividad Limpieza y almacenamiento del dataset
+# Almacenamos en esta variable todos los datos originales indicando en la etiqueta si lo escribió un humano o si fue generado
+datos_extraidos = {"text":[], "label":[]} 
+for dato in datos_humanos_originales:
+     datos_extraidos["text"].append(dato)
+     datos_extraidos["label"].append("humano")
+for dato in datos_IA_originales:
+     datos_extraidos["text"].append(dato)
+     datos_extraidos["label"].append("generado")
+
+# Creamos un DataFrame con los datos extraidos
+df_datos_extraidos = pd.DataFrame(datos_extraidos)
+
+# Guardamos los datos extraidos en un archivo con formato tsv
+df_datos_extraidos.to_csv('datos_extraidos.tsv', sep='\t', index=False)
+
+
+# Comienzamos con el punto 3 de la actividad, Limpieza y almacenamiento del dataset
 
 # Eliminamos duplicados de las listas utilizando la función set
 datos_humanos_sin_duplicados = list(set(datos_humanos_originales))
@@ -58,7 +76,6 @@ datos_IA_grandes = []
 for texto in datos_humanos_sin_duplicados:
      if len(texto) > 19:
           datos_humanos_grandes.append(texto)
-
 for texto in datos_IA_sin_duplicados:
      if len(texto) > 19:
           datos_IA_grandes.append(texto)
@@ -71,40 +88,33 @@ for texto in datos_humanos_grandes:
         if detect(texto) == "en":
             datos_humanos.append(texto)
     except LangDetectException as e:
-        # Manejar la excepción si la detección de idioma falla para un texto
-        # Aquí puedes agregar un mensaje de registro o manejar el error de otra manera
-        print(f"Error al detectar idioma: {e}")
-
+        # Si falla la deteción de idioma imprimos un mesaje de error
+        print(f"Error al detectar el idioma: {e}")
 for texto in datos_IA_grandes:
     try:
         if detect(texto) == "en":
             datos_IA.append(texto)
     except LangDetectException as e:
-        # Manejar la excepción si la detección de idioma falla para un texto
-        # Aquí puedes agregar un mensaje de registro o manejar el error de otra manera
-        print(f"Error al detectar idioma: {e}")
+        # Si falla la deteción de idioma imprimos un mesaje de error
+        print(f"Error al detectar el idioma: {e}")
 
 
-# almacenamos en esta variable todos los datos indicando en la etiqueta quien lo escribió
+# Almacenamos en esta variable todos los datos indicando en la etiqueta si lo escribió un humano o si fue generado
 datos = {"text":[], "label":[]} 
-#for dato in datos_humanos:
 for dato in datos_humanos:
      datos["text"].append(dato)
      datos["label"].append("humano")
-
-#for dato in datos_IA:
 for dato in datos_IA:
      datos["text"].append(dato)
      datos["label"].append("generado")
 
-
+# Imprimimos estadísticas del dataset
 print("Instancias totales del dataset: ", len(datos_humanos) + len(datos_IA))
 print("Instancias humanas ", len(datos_humanos))
 print("Instancias IA ", len(datos_IA))
 
+# Creamos un DataFrame con los datos
+df = pd.DataFrame(datos)
 
-# creamos un DataFrame con los datos
-df = pandas.DataFrame(datos)
-
-# guardamos el dataset en un archivo con formato tsv
+# Guardamos el dataset en un archivo con formato tsv
 df.to_csv('dataset.tsv', sep='\t', index=False)

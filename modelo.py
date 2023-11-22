@@ -59,7 +59,7 @@ print("Número instancias generadas en el test", (test_df["label"]=="generado").
 # Datos de configuración para el entrenamiento modelo
 max_instances_per_class = 5000
 max_features = 20000 # Número máximo de características extraídas para nuestras instancias
-id2label = {0: "human", 1: "machine"}
+
 
 # Vectorizar datos: extraer características de nuestros datos (desde texto hasta vectores numéricos)
 vectorizer = TfidfVectorizer(max_features=max_features, stop_words="english", ngram_range=(1,1))
@@ -81,11 +81,10 @@ model.fit(X_train, Y_train)
 predictions = model.predict(X_test)
 
 # Evaluar predicciones
-target_names = [label for idx, label in id2label.items()]
-print(classification_report(Y_test, predictions, target_names=target_names))
+print(classification_report(Y_test, predictions, target_names=le.classes_))
 
 # Clasifica el texto introducido en custom_text
-custom_texts = ["I'm ChatGPT, your virtual assistant, and I'm generating texts"]
+custom_texts = ["In the context of data science, machine learning, and data analysis, many algorithms make use of random numbers for initializing parameters, performing random data splits, among other tasks. Setting the random seed ensures that, even though the process uses random numbers, the results obtained are consistent and reproducible across different code runs."]
 X_custom = vectorizer.transform(custom_texts)
 preds = model.predict(X_custom)
-print("Classification label:", target_names[preds[0]])
+print("Classification label:", le.classes_[preds[0]])
